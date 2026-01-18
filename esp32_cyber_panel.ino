@@ -1,8 +1,8 @@
-#include "WiFi.h"
 #include "WebServer.h"
+#include "WiFi.h"
 
-const char* ssid = "IPLAN-437792";
-const char* password = "HSENN2SL7376";
+const char *ssid = "YOUR_WIFI_SSID";
+const char *password = "YOUR_WIFI_PASSWORD";
 
 WebServer server(80);
 
@@ -95,9 +95,7 @@ refresh();
   return html;
 }
 
-void handleRoot() {
-  server.send(200, "text/html", htmlPage());
-}
+void handleRoot() { server.send(200, "text/html", htmlPage()); }
 
 void handleToggle() {
   ledState = !ledState;
@@ -109,7 +107,7 @@ void handleStatus() {
   unsigned long uptime = (millis() - startMillis) / 1000;
 
   String json = "{";
-  json += "\"led\":" + String(ledState ? "true":"false") + ",";
+  json += "\"led\":" + String(ledState ? "true" : "false") + ",";
   json += "\"ip\":\"" + WiFi.localIP().toString() + "\",";
   json += "\"rssi\":" + String(WiFi.RSSI()) + ",";
   json += "\"uptime\":" + String(uptime);
@@ -143,6 +141,4 @@ void setup() {
   Serial.println("Web server started!");
 }
 
-void loop() {
-  server.handleClient();
-}
+void loop() { server.handleClient(); }

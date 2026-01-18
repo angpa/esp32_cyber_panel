@@ -1,30 +1,21 @@
-# ESP32 & Sensors: Hardware Exploration Cohort (Session 1)
+# ESP32 Cyber Panel
 
-**Host:** AI Whisperers  
-**Date:** Saturday, January 17  
-**Time:** 12:00 - 13:00  
-**Location:** Buenos Aires, Ciudad Autónoma de Buenos Aires  
+ESP32 web server with a cyberpunk-themed UI for controlling hardware.
 
-> **Status:** Este evento ha terminado. ¡Nos vemos la próxima vez!
+## About
 
-## About the event
+Part of the AI Whisperers hardware exploration cohort - a collaborative project exploring ESP32 microcontrollers, sensors, and robotics.
 
-AI Whisperers is diving deep into hardware for 2026. This is the first session of our robotics cohort - a peer exploration group building toward a year-long series focused on ESP32s, sensors, and whatever we want to create together.
+## Features
 
-### What We're Doing:
+- Web-based control panel with modern cyberpunk aesthetics
+- LED control via web interface
+- Real-time system monitoring (WiFi signal, uptime, IP address)
+- Responsive design for mobile and desktop
 
-- **Hands-on with ESP32 microcontrollers** (6 available)
-- **Sensor exploration and experimentation**
-- **Chemistry sensing as our anchor project** (led by Juan's expertise)
-- **Foundation for autonomous robots**, mesh networking, voice assistant integration, and beyond
+## Setup
 
-### The Format
-This isn't traditional teaching - it's collaborative discovery. Stewart has ESP32s running Meshtastic networks, Raspberry Pi systems, and voice assistants. Juan brings chemistry expertise. You bring your curiosity. We'll figure out what these systems unlock together.
-
-### Who Should Come
-Anyone ready to commit to exploring hardware through 2026. Max 6 people in person - intimate cohort building for the long term.
-
-### Bring
-Laptop if you want to code along, questions about what you want to build.
-
-> **Note:** Location details shared with confirmed attendees only.
+1. Update WiFi credentials in `esp32_cyber_panel.ino`
+2. Upload to your ESP32 board
+3. Connect to the device IP shown in Serial Monitor
+4. Control your ESP32 through the web interface
