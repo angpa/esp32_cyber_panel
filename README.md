@@ -19,3 +19,7 @@ Part of the AI Whisperers hardware exploration cohort - a collaborative project 
 2. Upload to your ESP32 board
 3. Connect to the device IP shown in Serial Monitor
 4. Control your ESP32 through the web interface
+
+## Screenshots 📸
+
+![Cyber Panel Interface](assets/images/esp32d-panel.jpeg)
