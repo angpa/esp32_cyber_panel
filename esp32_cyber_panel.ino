@@ -1,21 +1,18 @@
 #include "WebServer.h"
 #include "WiFi.h"
 
+// 🔐 Sanitized credentials
 const char *ssid = "YOUR_WIFI_SSID";
 const char *password = "YOUR_WIFI_PASSWORD";
 
 WebServer server(80);
-
-bool ledState = false;
 unsigned long startMillis;
 
-String htmlPage() {
-  String html = R"rawliteral(
-<!DOCTYPE html>
-<html>
-<head>
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>ESP32 Control</title>
+String html() {
+  return R"rawliteral(
+<!DOCTYPE html><html>
+<head><meta name=viewport content="width=device-width, initial-scale=1">
+<title>ESP32 Analyzer</title>
 <style>
 body {
   background: radial-gradient(circle, #0f2027, #203a43, #2c5364);
@@ -28,8 +25,8 @@ h1 {
   text-shadow: 0 0 15px #00ffcc;
 }
 button {
-  font-size: 22px;
-  padding: 15px 40px;
+  font-size: 16px;
+  padding: 10px 20px;
   border-radius: 40px;
   border: none;
   background: linear-gradient(45deg, #00ffcc, #00ffaa);
@@ -37,6 +34,7 @@ button {
   cursor: pointer;
   box-shadow: 0 0 20px #00ffcc;
   transition: 0.2s;
+  margin: 10px;
 }
 button:hover {
   transform: scale(1.05);
@@ -51,94 +49,149 @@ button:hover {
   border-radius: 12px;
   box-shadow: 0 0 15px #00ffcc;
 }
-</style>
-</head>
+canvas { background: black; border: 1px solid #00ffcc; width: 100%; border-radius: 4px; }
+pre { color: #00ffaa; text-align: left; font-size: 12px; overflow: auto; }
+#qual { font-weight: bold; font-size: 18px; }
+</style></head>
 <body>
 
-<h1>ESP32 CYBER PANEL</h1>
+<h1>ESP32 RADIO ANALYZER</h1>
 
-<div class="card">
-<p>LED Status: <b id="led">---</b></p>
-<button onclick="toggle()">Toggle LED</button>
+<div class=card>
+IP: <span id=ip></span><br>
+RSSI: <span id=rssi></span> dBm<br>
+Average: <span id=avg></span> dBm<br>
+Status: <span id=qual>---</span><br>
+Heap: <span id=heap></span><br>
+CPU: <span id=cpu></span> MHz<br>
+Uptime: <span id=uptime></span> s
 </div>
 
-<div class="card">
-<p>IP: <span id="ip"></span></p>
-<p>WiFi RSSI: <span id="rssi"></span> dBm</p>
-<p>Uptime: <span id="uptime"></span> sec</p>
+<div class=card>
+RSSI Oscilloscope<br>
+<canvas id=c width=320 height=140></canvas>
+</div>
+
+<div class=card>
+<button onclick="scan()">WiFi Scan</button>
+<pre id=w></pre>
 </div>
 
 <script>
-function refresh(){
-  fetch('/status')
-  .then(r=>r.json())
-  .then(d=>{
-    document.getElementById("led").innerText = d.led ? "ON" : "OFF";
-    document.getElementById("ip").innerText = d.ip;
-    document.getElementById("rssi").innerText = d.rssi;
-    document.getElementById("uptime").innerText = d.uptime;
-  });
+let ctx=c.getContext("2d"),buf=[];
+
+function classify(v){
+ if(v>-60){qual.innerText="GOOD";qual.style.color="#00ff00";}
+ else if(v>-75){qual.innerText="FAIR";qual.style.color="#ffff00";}
+ else{qual.innerText="POOR";qual.style.color="#ff3333";}
 }
 
-function toggle(){
-  fetch('/toggle');
-  setTimeout(refresh,200);
+function stat(){
+fetch('/s').then(r=>r.json()).then(d=>{
+ip.innerText=d.ip;
+rssi.innerText=d.r;
+heap.innerText=d.h;
+cpu.innerText=d.c;
+uptime.innerText=d.u;
+});
 }
 
-setInterval(refresh,2000);
-refresh();
+function osc(){
+fetch('/r').then(r=>r.text()).then(v=>{
+let val=parseInt(v);
+rssi.innerText=val;
+
+buf.push(val);
+if(buf.length>100)buf.shift();
+
+let sum=0;
+for(let i=0;i<buf.length;i++) sum+=buf[i];
+let av=Math.round(sum/buf.length);
+avg.innerText=av;
+
+classify(val);
+
+ctx.clearRect(0,0,320,140);
+
+// reference lines
+ctx.strokeStyle="#003333";
+[-40,-60,-80].forEach(l=>{
+ let y=140-((l+100)/60*140);
+ ctx.beginPath();
+ ctx.moveTo(0,y);
+ ctx.lineTo(320,y);
+ ctx.stroke();
+});
+
+// labels
+ctx.fillStyle="#00ffaa";
+ctx.fillText("-40 dBm",5,12);
+ctx.fillText("-60 dBm",5,52);
+ctx.fillText("-80 dBm",5,92);
+
+// signal
+ctx.beginPath();
+ctx.strokeStyle="#00ffcc";
+for(let i=0;i<buf.length;i++){
+ let y=140-((buf[i]+100)/60*140);
+ if(i==0) ctx.moveTo(i*3.2,y);
+ else ctx.lineTo(i*3.2,y);
+}
+ctx.stroke();
+});
+}
+
+function scan(){
+ fetch('/w').then(r=>r.text()).then(t=>w.innerText=t);
+}
+
+setInterval(stat,2000);
+setInterval(osc,120);
+stat();
 </script>
 
-</body>
-</html>
+</body></html>
 )rawliteral";
-  return html;
 }
 
-void handleRoot() { server.send(200, "text/html", htmlPage()); }
-
-void handleToggle() {
-  ledState = !ledState;
-  digitalWrite(2, ledState ? HIGH : LOW);
-  server.send(200, "text/plain", "OK");
-}
+void handleRoot() { server.send(200, "text/html", html()); }
 
 void handleStatus() {
-  unsigned long uptime = (millis() - startMillis) / 1000;
+  String j = "{";
+  j += "\"ip\":\"" + WiFi.localIP().toString() + "\",";
+  j += "\"r\":" + String(WiFi.RSSI()) + ",";
+  j += "\"h\":" + String(ESP.getFreeHeap()) + ",";
+  j += "\"c\":" + String(getCpuFrequencyMhz()) + ",";
+  j += "\"u\":" + String((millis() - startMillis) / 1000);
+  j += "}";
+  server.send(200, "application/json", j);
+}
 
-  String json = "{";
-  json += "\"led\":" + String(ledState ? "true" : "false") + ",";
-  json += "\"ip\":\"" + WiFi.localIP().toString() + "\",";
-  json += "\"rssi\":" + String(WiFi.RSSI()) + ",";
-  json += "\"uptime\":" + String(uptime);
-  json += "}";
+void handleRSSI() { server.send(200, "text/plain", String(WiFi.RSSI())); }
 
-  server.send(200, "application/json", json);
+void handleScan() {
+  String o = "";
+  int n = WiFi.scanNetworks();
+  for (int i = 0; i < n; i++)
+    o += WiFi.SSID(i) + " (" + String(WiFi.RSSI(i)) + " dBm)\n";
+  server.send(200, "text/plain", o);
 }
 
 void setup() {
   Serial.begin(115200);
-  pinMode(2, OUTPUT);
   startMillis = millis();
 
   WiFi.begin(ssid, password);
-  Serial.print("Connecting");
-
   while (WiFi.status() != WL_CONNECTED) {
     delay(500);
-    Serial.print(".");
   }
 
-  Serial.println("\nConnected!");
-  Serial.print("IP: ");
-  Serial.println(WiFi.localIP());
-
   server.on("/", handleRoot);
-  server.on("/toggle", handleToggle);
-  server.on("/status", handleStatus);
+  server.on("/s", handleStatus);
+  server.on("/r", handleRSSI);
+  server.on("/w", handleScan);
 
   server.begin();
-  Serial.println("Web server started!");
 }
 
 void loop() { server.handleClient(); }

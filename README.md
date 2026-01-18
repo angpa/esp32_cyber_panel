@@ -1,25 +1,35 @@
-# ESP32 Cyber Panel
+# ESP32 Cyber Panel 📡
 
-ESP32 web server with a cyberpunk-themed UI for controlling hardware.
+A futuristic, cyber-aesthetic styling ESP32 Web Server project for analyzing WiFi signals.
 
-## About
+## Features ✨
 
-Part of the AI Whisperers hardware exploration cohort - a collaborative project exploring ESP32 microcontrollers, sensors, and robotics.
+- **Real-time Stats**: Monitor IP address, RSSI (Signal Strength), Heap memory, CPU frequency, and Uptime.
+- **RSSI Oscilloscope**: Visual graph of signal strength over time.
+- **WiFi Scanner**: Scan for nearby networks and view their signal quality.
+- **Cyber Aesthetics**: Dark mode interface with neon cyan accents, gradients, and glassmorphism cards.
 
-## Features
+## Hardware 🛠️
 
-- Web-based control panel with modern cyberpunk aesthetics
-- LED control via web interface
-- Real-time system monitoring (WiFi signal, uptime, IP address)
-- Responsive design for mobile and desktop
+- ESP32 Development Board (e.g., ESP32-WROOM-32)
 
-## Setup
+## Setup ⚙️
 
-1. Update WiFi credentials in `esp32_cyber_panel.ino`
-2. Upload to your ESP32 board
-3. Connect to the device IP shown in Serial Monitor
-4. Control your ESP32 through the web interface
+1. **Credentials**: Open `esp32_cyber_panel.ino` and update the following lines with your WiFi credentials:
+    ```cpp
+    const char* ssid = "YOUR_WIFI_SSID";
+    const char* password = "YOUR_WIFI_PASSWORD";
+    ```
+2. **Flash**: Upload the code to your ESP32 using the Arduino IDE.
+3. **Connect**: Open the Serial Monitor (115200 baud) to see the assigned IP address.
+4. **Access**: Enter the IP address in your web browser to view the Cyber Panel.
+
+## Usage 🕹️
+
+- **Dashboard**: View live metrics.
+- **Oscilloscope**: Watch the graph update every ~120ms to see signal stability.
+- **Scan**: Click "WiFi Scan" to list available networks and their signal strength (dBm).
 
 ## Screenshots 📸
 
-![Cyber Panel Interface](assets/images/esp32d-panel.jpeg)
+<img src="assets/images/esp32d-panel.jpeg" width="400" alt="Cyber Panel Interface">
