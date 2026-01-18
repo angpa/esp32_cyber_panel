@@ -32,4 +32,4 @@ A futuristic, cyber-aesthetic styling ESP32 Web Server project for analyzing WiF
 
 ## Screenshots 📸
 
-![Cyber Panel Interface](assets/images/esp32d-panel.jpeg)
+<img src="assets/images/esp32d-panel.jpeg" width="400" alt="Cyber Panel Interface">
